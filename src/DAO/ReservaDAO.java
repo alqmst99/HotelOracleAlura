@@ -33,7 +33,7 @@ public class ReservaDAO {
 				
 			}
 		}catch(SQLException e) {
-			throw new RuntimeException();
+			throw new RuntimeException("animal" + e.getMessage(), e);
 		}
 	}
 }

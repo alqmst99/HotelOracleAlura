@@ -7,6 +7,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import java.awt.Color;
 import com.toedter.calendar.JDateChooser;
+
+import Controladores.HuespedesControlador;
+import Controladores.ReservaControlador;
+import Entity.Huespedes;
+
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
@@ -20,6 +25,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.text.Format;
+import java.time.LocalDate;
 import java.awt.event.ActionEvent;
 import java.awt.Toolkit;
 import javax.swing.SwingConstants;
@@ -38,15 +44,15 @@ public class RegistroHuesped extends JFrame {
 	private JLabel labelExit;
 	private JLabel labelAtras;
 	int xMouse, yMouse;
-
-	/**
+	private HuespedesControlador huespedControlador;
+	private ReservaControlador reservaControlador;	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					RegistroHuesped frame = new RegistroHuesped();
+					RegistroHuesped frame = new RegistroHuesped(0);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -58,8 +64,10 @@ public class RegistroHuesped extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public RegistroHuesped() {
+	public RegistroHuesped(int idReserva) {
 		
+		this.huespedControlador= new HuespedesControlador();
+		this.reservaControlador= new ReservaControlador();
 		setIconImage(Toolkit.getDefaultToolkit().getImage(RegistroHuesped.class.getResource("/imagenes/lOGO-50PX.png")));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 910, 634);
@@ -210,6 +218,8 @@ public class RegistroHuesped extends JFrame {
 		txtNreserva.setColumns(10);
 		txtNreserva.setBackground(Color.WHITE);
 		txtNreserva.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+		String id= String.valueOf(idReserva);
+		txtNreserva.setText(id);
 		contentPane.add(txtNreserva);
 		
 		JSeparator separator_1_2 = new JSeparator();
@@ -253,6 +263,7 @@ public class RegistroHuesped extends JFrame {
 		btnguardar.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				guardarH();
 			}
 		});
 		btnguardar.setLayout(null);
@@ -315,6 +326,24 @@ public class RegistroHuesped extends JFrame {
 		labelExit.setFont(new Font("Roboto", Font.PLAIN, 18));
 	}
 	
+	
+	private void guardarH() {
+		if(txtFechaN.getDate() !=null && !txtNombre.equals("") && !txtApellido.equals("") && !txtTelefono.equals("")) {
+			
+			LocalDate fechaN= LocalDate.parse(((JTextField)txtFechaN.getDateEditor().getUiComponent()).getText());
+			int nReserva = Integer.parseInt(txtNreserva.getText());
+			Huespedes huespedes = new Huespedes(txtNombre.getText(), txtApellido.getText(), fechaN,
+					txtNacionalidad.getSelectedItem().toString(), txtTelefono.getText(),nReserva );
+			this.huespedControlador.guardar(huespedes);
+			Exito exito = new Exito();
+			exito.setVisible(true);
+			dispose();
+			
+			
+		}else {
+			JOptionPane.showMessageDialog(this, "Rellena todos los campos");
+		}
+	}
 	
 	//Código que permite mover la ventana por la pantalla según la posición de "x" y "y"	
 	 private void headerMousePressed(java.awt.event.MouseEvent evt) {

@@ -329,7 +329,7 @@ public class ReservasView extends JFrame {
 			Reserva reserva= new Reserva(dateE, dateS, txtValor.getText(), txtFormaPago.getSelectedItem().toString());
 			reservaControl.guardar(reserva);
 			
-			RegistroHuesped registro = new RegistroHuesped();
+			RegistroHuesped registro = new RegistroHuesped(reserva.getId());
 			registro.setVisible(true);
 			dispose();
 		}else {
