@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,8 +68,8 @@ public class ReservaDAO {
 		try(ResultSet rts= pstm.getResultSet()){
 			while (rts.next()) {
 				int id =rts.getInt("id");
-				LocalDate fechaE = rts.getDate("fecha_entrada").toLocalDate().plusDays(id);
-				LocalDate fechaS = rts.getDate("fecha_salida").toLocalDate().plusDays(id);
+				LocalDate fechaE = rts.getDate("fecha_entrada").toLocalDate().plusDays(1);
+				LocalDate fechaS = rts.getDate("fecha_salida").toLocalDate().plusDays(1);
 				String valor= rts.getString("valor");
 				String formaPago= rts.getString("forma_de_pago");
 			
@@ -118,10 +119,13 @@ public class ReservaDAO {
 	 //Eliminar
 		
 		public void eliminar(Integer id) {
-			try(PreparedStatement pst= con.prepareStatement("DELETE FROM reservas WHERE id=?")){
-			pst.setInt(1, id);
-			pst.execute();
-					
+			try{
+				Statement state = con.createStatement();
+				state.execute("SET FOREIGN_KEY_CHECKS=0");
+				PreparedStatement pst= con.prepareStatement("DELETE FROM reservas WHERE id=?");
+				pst.setInt(1, id);
+				pst.execute();
+				state.execute("SET FOREIGN_KEY_CHECKS=1");		
 		}catch(SQLException e) {
 			throw new RuntimeException("animal" + e.getMessage(), e);
 		}

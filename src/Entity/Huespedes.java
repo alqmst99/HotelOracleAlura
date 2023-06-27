@@ -23,6 +23,22 @@ public class Huespedes {
 		this.idReserva = idReserva;
 	}
 	
+	
+	
+	public Huespedes(Integer id, String nombre, String apellido, LocalDate fechaNacimiento, String nacionalidad,
+			String telefono, Integer idReserva) {
+		super();
+		this.id = id;
+		this.nombre = nombre;
+		this.apellido = apellido;
+		this.fechaNacimiento = fechaNacimiento;
+		this.nacionalidad = nacionalidad;
+		this.telefono = telefono;
+		this.idReserva = idReserva;
+	}
+
+
+
 	//getters and setters
 
 	public Integer getId() {

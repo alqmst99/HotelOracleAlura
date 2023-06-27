@@ -9,36 +9,38 @@ import javax.swing.table.DefaultTableModel;
 
 import Controladores.HuespedesControlador;
 import Controladores.ReservaControlador;
+import Entity.Huespedes;
 import Entity.Reserva;
 
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JButton;
-import javax.print.attribute.standard.Chromaticity;
-import javax.print.attribute.standard.DateTimeAtCompleted;
+
+
+
 import javax.swing.ImageIcon;
 import java.awt.Color;
-import java.awt.SystemColor;
+
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import java.awt.Font;
-import java.awt.event.ActionListener;
+
 import java.util.List;
 import java.util.Optional;
-import java.awt.event.ActionEvent;
+
 import javax.swing.JTabbedPane;
 import java.awt.Toolkit;
 import javax.swing.SwingConstants;
 import javax.swing.JSeparator;
-import javax.swing.JSpinner.DateEditor;
+
 import javax.swing.ListSelectionModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+
 import java.awt.event.MouseMotionAdapter;
-import java.sql.SQLException;
-import java.text.DateFormat;
+import java.sql.Date;
+
+
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -135,6 +137,7 @@ public class Busqueda extends JFrame {
 		JScrollPane scroll_table = new JScrollPane(tbReservas);
 		panel.addTab("Reservas", new ImageIcon(Busqueda.class.getResource("/imagenes/reservado.png")), scroll_table, null);
 		scroll_table.setVisible(true);
+		tbReservas.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		mostrarTablaReservas();
 		
 		
@@ -149,9 +152,11 @@ public class Busqueda extends JFrame {
 		modeloHuesped.addColumn("Nacionalidad");
 		modeloHuesped.addColumn("Telefono");
 		modeloHuesped.addColumn("Número de Reserva");
+		mostrarTablaHuespedes();
 		JScrollPane scroll_tableHuespedes = new JScrollPane(tbHuespedes);
 		panel.addTab("Huéspedes", new ImageIcon(Busqueda.class.getResource("/imagenes/pessoas.png")), scroll_tableHuespedes, null);
 		scroll_tableHuespedes.setVisible(true);
+		mostrarTablaHuespedes();
 		
 		JLabel lblNewLabel_2 = new JLabel("");
 		lblNewLabel_2.setIcon(new ImageIcon(Busqueda.class.getResource("/imagenes/Ha-100px.png")));
@@ -251,10 +256,12 @@ public class Busqueda extends JFrame {
 		btnbuscar.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				lipiarTabla();
+				limpiarTabla();
 				if(txtBuscar.getText().equals("")){
 					mostrarTablaReservas();
+					mostrarTablaHuespedes();
 				}else {
+					mostrarTablaHuespedesId();
 					mostrarTablaReservasId();
 				}
 			}
@@ -277,13 +284,20 @@ public class Busqueda extends JFrame {
 		
 		public void mouseClicked(MouseEvent e) {
 			int filaReservas =tbReservas.getSelectedRow();
+			int filaHuesped =tbHuespedes.getSelectedRow();
 			if (filaReservas >=0) {
 				ActualizarR();
-				lipiarTabla();
+				limpiarTabla();
 				mostrarTablaReservas();
-			}
+				mostrarTablaHuespedes();
+			}else if (filaHuesped >=0) {
+				ActualizarH();
+				limpiarTabla();
+				mostrarTablaReservas();
+				mostrarTablaHuespedes();
+			
 		}
-		});
+		}});
 		btnEditar.setLayout(null);
 		btnEditar.setBackground(new Color(12, 138, 199));
 		btnEditar.setBounds(635, 508, 122, 35);
@@ -300,22 +314,35 @@ public class Busqueda extends JFrame {
 		JPanel btnEliminar = new JPanel();
 		btnEliminar.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				int fileReservas = tbReservas.getSelectedRow();
-				
-				if(fileReservas >=0) {
-					reserva= tbReservas.getValueAt(fileReservas, 0).toString();
+				int filaReservas = tbReservas.getSelectedRow();
+				int filaHuesped =tbHuespedes.getSelectedRow();
+				if(filaReservas >=0) {
+					reserva= tbReservas.getValueAt(filaReservas, 0).toString();
 					int confirma= JOptionPane.showConfirmDialog(null, "¿Seguro que desea BORRAR la reserva?");
 					if (confirma == JOptionPane.YES_OPTION) {
-						String valor = tbReservas.getValueAt(fileReservas, 0).toString();
+						String valor = tbReservas.getValueAt(filaReservas, 0).toString();
 						reservasControlador.eliminar(Integer.valueOf(valor));
 						JOptionPane.showMessageDialog(contentPane, "Registro eliminado con exito");
-						lipiarTabla();
-						mostrarReserva();
-						
-					}
+						limpiarTabla();
+						mostrarTablaReservas();
+						mostrarTablaHuespedes();
+						}
+					}else if(filaHuesped >=0) {
+						huesped= tbHuespedes.getValueAt(filaHuesped, 0).toString();
+						int confirmaH= JOptionPane.showConfirmDialog(null, "¿Seguro que desea BORRAR el huesped?");
+						if (confirmaH == JOptionPane.YES_OPTION) {
+							String valorH = tbHuespedes.getValueAt(filaHuesped, 0).toString();
+							huespedControlador.eliminar(Integer.valueOf(valorH));
+							JOptionPane.showMessageDialog(contentPane, "Registro eliminado con exito");
+							limpiarTabla();
+							mostrarTablaHuespedes();
+							mostrarTablaReservas();
+						}
+				}else {
+					JOptionPane.showInternalMessageDialog(null,"hubo un error al eliminar");
 				}
-			}
-		});
+			
+		}});
 		btnEliminar.setLayout(null);
 		btnEliminar.setBackground(new Color(12, 138, 199));
 		btnEliminar.setBounds(767, 508, 122, 35);
@@ -331,12 +358,15 @@ public class Busqueda extends JFrame {
 		setResizable(false);
 	}
 	
+	
+	//Reservas CRUD
 	private List<Reserva> mostrarReserva(){
 		return this.reservasControlador.mostrar();
 	}
 	private List<Reserva> buscarReserva(){
 		return this.reservasControlador.buscar(txtBuscar.getText());
 	}
+	
 	
 	
 	
@@ -408,12 +438,68 @@ public class Busqueda extends JFrame {
 	
 	
 	
-	private void lipiarTabla() {
+	private void limpiarTabla() {
 		((DefaultTableModel)tbHuespedes.getModel()).setRowCount(0);
 		((DefaultTableModel)tbReservas.getModel()).setRowCount(0);
 	}
 	
+	//Huespedes CRUD
 	
+	
+	private List<Huespedes> mostrarHuespedes(){
+		return this.huespedControlador.mostrar();
+	}
+	private List<Huespedes> buscarHuesped(){
+		return this.huespedControlador.buscar(txtBuscar.getText());
+	}
+	
+	private void ActualizarH() {
+		Optional.ofNullable(modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), tbHuespedes.getSelectedColumn())).ifPresentOrElse(filaH -> {
+			String nombre =(String) modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 1);
+			String apellido =(String) modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 2);
+			LocalDate fechaNacimiento = LocalDate.parse(modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 3).toString());
+			String nacionalidad =(String) modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 4);
+			String telefono =(String) modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 5);
+			Integer id_reserva= Integer.valueOf(modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 6).toString());
+			Integer id =	Integer.valueOf(modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 0).toString());
+			if (tbHuespedes.getSelectedColumn() ==0) {
+				JOptionPane.showMessageDialog(this, "no se pueden editar los ID");
+			}else {
+				this.huespedControlador.actualizar(nombre, apellido, fechaNacimiento, nacionalidad, telefono, id_reserva, id);
+				JOptionPane.showMessageDialog(this, String.format("Registro fue modificado con exito"));
+			}
+			
+			
+			}, ()-> JOptionPane.showInternalMessageDialog(this, "Error al modificar el regitro") );
+			
+		
+	}
+	private void mostrarTablaHuespedes() {
+		List<Huespedes> huesped= mostrarHuespedes();
+		modeloHuesped.setRowCount(0);
+		try {
+			for (Huespedes huespedes : huesped) {
+				modeloHuesped.addRow( new Object [] {
+						huespedes.getId(), huespedes.getNombre(), huespedes.getApellido(), huespedes.getFechaNacimiento(), huespedes.getTelefono(),huespedes.getNacionalidad(), huespedes.getIdReserva()
+				});
+			}
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	private void mostrarTablaHuespedesId() {
+		List<Huespedes> huesped = buscarHuesped();
+		modeloHuesped.setRowCount(0);
+		try {
+			for (Huespedes huespedes : huesped) {
+				modeloHuesped.addRow( new Object [] {
+						huespedes.getId(), huespedes.getNombre(), huespedes.getApellido(), huespedes.getFechaNacimiento(), huespedes.getTelefono(),huespedes.getNacionalidad(), huespedes.getIdReserva()
+				});
+			}
+		} catch (Exception e) {
+			throw e;
+		}
+	}
 	
 	
 //Código que permite mover la ventana por la pantalla según la posición de "x" y "y"
