@@ -322,6 +322,8 @@ public class ReservasView extends JFrame {
 		btnsiguiente.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 }
 	
+	
+	//Guarda las reservas
 	private void guardarReserva() {
 		if(txtFechaEntrada.getDate()!= null && txtFechaSalida.getDate()!=null && !txtValor.equals("") && !txtFormaPago.getSelectedItem().toString().equals("")) {
 			LocalDate dateE = LocalDate.parse(((JTextField)txtFechaEntrada.getDateEditor().getUiComponent()).getText());
@@ -336,6 +338,8 @@ public class ReservasView extends JFrame {
 			JOptionPane.showMessageDialog(this, "Debes llenar todos los campos");
 		}
 	}
+	
+	//Calcula el valor de las fechas
 	public void calcularValor(JDateChooser dateE, JDateChooser dateS) {
 		if (dateE.getDate() !=null && dateS.getDate() !=null) {
 			if(dateE.getDate().after(dateS.getDate())) {
@@ -358,6 +362,11 @@ public class ReservasView extends JFrame {
 		}
 		
 	}
+	//Actualizacion las fechas,limpia el valor
+	public void limpiarValor() {
+		txtValor.setText("");
+	}
+	
 		
 	//Código que permite mover la ventana por la pantalla según la posición de "x" y "y"	
 	 private void headerMousePressed(java.awt.event.MouseEvent evt) {
